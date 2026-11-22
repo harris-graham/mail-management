@@ -1,0 +1,102 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Mail Management API",
+    "version": "1.0.0",
+    "description": "Government mail registry API: authentication, RBAC, mail workflow, attachments, search, analytics and administration."
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" },
+              "details": {},
+              "requestId": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "security": [],
+        "summary": "Sign in with matricule, password and optional TOTP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["matricule", "password"],
+                "properties": {
+                  "matricule": { "type": "string" },
+                  "password": { "type": "string" },
+                  "totp": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Access token and user profile" },
+          "401": { "description": "Invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/auth/refresh": { "post": { "summary": "Rotate the refresh cookie and issue a new access token", "responses": { "200": { "description": "New access token" } } } },
+    "/auth/logout": { "post": { "summary": "Revoke the refresh token", "responses": { "200": { "description": "Signed out" } } } },
+    "/auth/me": { "get": { "summary": "Current user and permissions", "responses": { "200": { "description": "User profile" } } } },
+    "/auth/change-password": { "post": { "summary": "Change the current password", "responses": { "200": { "description": "Password changed" } } } },
+    "/auth/mfa/setup": { "post": { "summary": "Start TOTP setup", "responses": { "200": { "description": "Secret and QR code" } } } },
+    "/auth/mfa/enable": { "post": { "summary": "Enable TOTP with a valid code", "responses": { "200": { "description": "Recovery codes" } } } },
+    "/mail": {
+      "get": {
+        "summary": "Search and paginate mail records",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" } },
+          { "name": "type", "in": "query", "schema": { "type": "string", "enum": ["correspondance", "consultation", "def"] } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "year", "in": "query", "schema": { "type": "integer" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "pageSize", "in": "query", "schema": { "type": "integer", "default": 25 } }
+        ],
+        "responses": { "200": { "description": "Paginated mail records" } }
+      },
+      "post": { "summary": "Create a mail record", "responses": { "201": { "description": "Created record" } } }
+    },
+    "/mail/{id}": {
+      "get": { "summary": "Get a mail record with events, comments and attachments", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Mail record" } } },
+      "patch": { "summary": "Update a mail record", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Updated record" } } },
+      "delete": { "summary": "Soft-delete a mail record", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Deleted" } } }
+    },
+    "/mail/{id}/transition": { "post": { "summary": "Apply a workflow action", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Updated record" } } } },
+    "/mail/{id}/comments": {
+      "get": { "summary": "List comments", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "Comments" } } },
+      "post": { "summary": "Add a comment", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "201": { "description": "Comment" } } }
+    },
+    "/mail/{id}/attachments": { "post": { "summary": "Upload attachments", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "201": { "description": "Attachments" } } } },
+    "/mail/{id}/pdf": { "get": { "summary": "Download the mail record as PDF", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "PDF" } } } },
+    "/analytics/summary": { "get": { "summary": "Dashboard KPIs", "responses": { "200": { "description": "Summary" } } } },
+    "/analytics/timeseries": { "get": { "summary": "Mail volume over time", "responses": { "200": { "description": "Time series" } } } },
+    "/analytics/by-dimension": { "get": { "summary": "Group mail by nature, ministry, service, agent, status or type", "responses": { "200": { "description": "Grouped counts" } } } },
+    "/analytics/sla": { "get": { "summary": "SLA performance by priority", "responses": { "200": { "description": "SLA rows" } } } },
+    "/notifications": { "get": { "summary": "List notifications", "responses": { "200": { "description": "Notifications" } } } },
+    "/admin/db/status": { "get": { "summary": "Database status, migrations and table counts", "responses": { "200": { "description": "Status" } } } },
+    "/admin/db/migrate": { "post": { "summary": "Apply pending SQL migrations", "responses": { "200": { "description": "Applied migrations" } } } },
+    "/admin/db/backup": { "get": { "summary": "Download a JSON backup", "responses": { "200": { "description": "Backup" } } } },
+    "/admin/db/import-sqlite": { "post": { "summary": "Import a legacy SQLite database", "responses": { "200": { "description": "Import report" } } } },
+    "/admin/audit": { "get": { "summary": "Search the audit log", "responses": { "200": { "description": "Audit rows" } } } }
+  }
+}

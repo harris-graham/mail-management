@@ -1,0 +1,33 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+categories:
+  - title: "Breaking changes"
+    labels: ["type:breaking"]
+  - title: "Security"
+    labels: ["type:security"]
+  - title: "Features"
+    labels: ["type:feature", "type:enhancement"]
+  - title: "Bug fixes"
+    labels: ["type:bug"]
+  - title: "Performance"
+    labels: ["type:performance"]
+  - title: "Documentation"
+    labels: ["type:docs"]
+  - title: "Maintenance"
+    labels: ["type:chore", "dependencies"]
+change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
+change-title-escapes: '\<*_&'
+version-resolver:
+  major:
+    labels: ["type:breaking"]
+  minor:
+    labels: ["type:feature", "type:enhancement"]
+  patch:
+    labels: ["type:bug", "type:security", "type:performance", "type:docs", "type:chore"]
+  default: patch
+template: |
+  ## What changed
+
+  $CHANGES
+
+  **Full changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

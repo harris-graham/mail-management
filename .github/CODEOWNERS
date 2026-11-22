@@ -1,0 +1,19 @@
+# Default owners for everything in the repository.
+# Update with your GitHub username or team
+# * @your-username
+
+# Backend and database.
+# /server/ @your-username
+# /server/src/db/ @your-username
+
+# Frontend.
+# /client/ @your-username
+
+# Infrastructure, CI and security.
+# /.github/ @your-username
+# /Dockerfile @your-username
+# /docker-compose.yml @your-username
+# /SECURITY.md @your-username
+
+# Documentation.
+# /docs/ @your-username

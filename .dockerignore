@@ -1,0 +1,16 @@
+node_modules
+**/node_modules
+client/build
+coverage
+.git
+.github
+*.db
+*.sqlite
+*.sqlite3
+server/uploads
+legacy
+backups
+.env
+.env.*
+!.env.example
+*.log

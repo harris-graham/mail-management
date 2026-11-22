@@ -1,0 +1,73 @@
+import React, { useState } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+import { Modal, Box, TextField, Button } from '@mui/material';
+const [openModal, setOpenModal] = useState(false);
+const [modalTitle, setModalTitle] = useState('');
+const [selectedItem, setSelectedItem] = useState(null);
+const [data, setData] = useState([]);
+const handleOpenModal = (title) => {
+  setModalTitle(title);
+  setOpenModal(true);
+};
+
+const handleCloseModal = () => {
+  setOpenModal(false);
+};
+
+const handleAddItem = () => {
+  // Logic to add item to data array
+  handleCloseModal();
+};
+
+const handleEditItem = () => {
+  // Logic to update item in data array
+  handleCloseModal();
+};
+
+const handleDeleteItem = () => {
+  // Logic to delete item from data array
+  handleCloseModal();
+};
+const columns = [
+  { field: 'id', headerName: 'ID', width: 70 },
+  { field: 'name', headerName: 'Name', width: 150 },
+  { field: 'email', headerName: 'Email', width: 200 },
+];
+
+return (
+  <div style={{ height: 400, width: '100%' }}>
+    <DataGrid
+      rows={data}
+      columns={columns}
+      onRowClick={(params) => setSelectedItem(params.row)}
+    />
+    <Button onClick={() => handleOpenModal('Add Item')}>Add Item</Button>
+    <Button onClick={() => handleOpenModal('Edit Item')} disabled={!selectedItem}>
+      Edit Item
+    </Button>
+    <Button onClick={handleDeleteItem} disabled={!selectedItem}>
+      Delete Item
+    </Button>
+    {/* Render the modal */}
+    <Modal open={openModal} onClose={handleCloseModal}>
+      <Box sx={{ ...modalStyle, width: 400 }}>
+        <h2>{modalTitle}</h2>
+        {/* Render form fields based on the modalTitle */}
+        {modalTitle === 'Add Item' && (
+          <>
+            <TextField label="Name" fullWidth />
+            <TextField label="Email" fullWidth />
+            <Button onClick={handleAddItem}>Add</Button>
+          </>
+        )}
+        {modalTitle === 'Edit Item' && selectedItem && (
+          <>
+            <TextField label="Name" fullWidth value={selectedItem.name} />
+            <TextField label="Email" fullWidth value={selectedItem.email} />
+            <Button onClick={handleEditItem}>Save</Button>
+          </>
+        )}
+      </Box>
+    </Modal>
+  </div>
+);
